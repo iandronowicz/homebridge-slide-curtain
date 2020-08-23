@@ -1,15 +1,19 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
-  "pluginType": "platform",
+  "pluginAlias": "HomebridgeSlideCurtain",
+  "pluginType": "accessory",
   "singular": true,
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "ip": {
+        "title": "ip",
         "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+        "required": true
+      },
+      "code": {
+        "title": "code",
+        "type": "string",
+        "required": true
       }
     }
   }
