@@ -19,16 +19,14 @@ After that you will need to enter the following details into the ~/.homebridge/c
 
 ```JSON
 {
-    ...
   "accessories": [
     {
-      "accessory": "HomebridgeSlideCurtain", //REQUIRED
-      "name": "name", //REQUIRED. Your desired name.
-      "ip": "x.x.x.x", //REQUIRED. Remember to have a fixed IP configured for your Slide on your router.
-      "code": "xxxxxxxx", //REQUIRED. 8 digit code in the sticker on the top of your Slide.
-      "poll_interval": x //OPTIONAL. Time in seconds to poll the Slide curtain. Defaults to 5s.
+      "accessory": "HomebridgeSlideCurtain", #REQUIRED
+      "name": "name", #REQUIRED. Your desired name.
+      "ip": "x.x.x.x", #REQUIRED. Remember to have a fixed IP configured for your Slide on your router.
+      "code": "xxxxxxxx", #REQUIRED. 8 digit code in the sticker on the top of your Slide.
+      "poll_interval": x #OPTIONAL. Time in seconds to poll the Slide curtain. Defaults to 5s.
     }
-    ...
  }
 ```
 
@@ -46,4 +44,4 @@ Now start or restart homebridge and your Slide should appear in the HomeKit app.
 - [ ] Clean up and refactor code
 - [ ] Correctly report errors by marking the accessory as "Not responding" in the Home app.
 
-# Special thanks to renssies and his homebridge-slide-remote plugin which I heavily used to develop this plugin.
+#### Special thanks to renssies and his homebridge-slide-remote plugin which I heavily used to develop this plugin.
