@@ -23,7 +23,7 @@ After that you will need to enter the following details into the ~/.homebridge/c
     {
       "accessory": "HomebridgeSlideCurtain", #REQUIRED
       "name": "name", #REQUIRED. Your desired name.
-      "ip": "x.x.x.x", #REQUIRED. Remember to have a fixed IP configured for your Slide on your router.
+      "ip": "x.x.x.x", #REQUIRED. Fixed IP configured for your Slide on your router.
       "code": "xxxxxxxx", #REQUIRED. 8 digit code in the sticker on the top of your Slide.
       "poll_interval": x #OPTIONAL. Time in seconds to poll the Slide curtain. Defaults to 5s.
     }
