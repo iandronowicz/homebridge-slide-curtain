@@ -77,7 +77,7 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
     this.name = config.name;
     this.tolerance = config.tolerance || 7;
     this.isLikelyMoving = false;
-    this.calibrationTime = (config.closing_time || 40) * 1000; // 40 seconds
+    this.calibrationTime = (config.closing_time || 20) * 1000; // 20 seconds
     // create a new Window Covering service
     this.service = new hap.Service.WindowCovering(this.name, "asd");
 
