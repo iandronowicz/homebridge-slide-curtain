@@ -17,7 +17,7 @@ npm install -g homebridge-slide-curtain
 
 After that you will need to enter the following details into the ~/.homebridge/config.json:
 
-```JSON
+```bash
 {
   "accessories": [
     {
@@ -35,7 +35,7 @@ Now start or restart homebridge and your Slide should appear in the HomeKit app.
 # Known Issues
 
 - [ ] If you control your Slide from outside of homekit (with the Slide remote control or just by hand with the Touch & Go function) the
-      status of the accesory will update in the worst case scenario in the "poll_interval" seconds set in the confi.
+      status of the accesory will update in the worst case scenario in "poll_interval" seconds setted in the config.
 
 - [ ] The code is far from perfect or optimized, this is literally my first time coding in node.
 
