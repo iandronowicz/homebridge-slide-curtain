@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/* eslint-disable eqeqeq */
 /* eslint-disable comma-dangle */
 /* eslint-disable quotes */
 import {
@@ -20,7 +20,8 @@ import poll from "poll";
 /*
  * IMPORTANT NOTICE
  *
- * One thing you need to take care of is, that you never ever ever import anything directly from the "homebridge" module (or the "hap-nodejs" module).
+ * One thing you need to take care of is, that you never ever ever import anything directly from the "homebridge" module (or the
+ * "hap-nodejs" module).
  * The above import block may seem like, that we do exactly that, but actually those imports are only used for types and interfaces
  * and will disappear once the code is compiled to Javascript.
  * In fact you can check that by running `npm run build` and opening the compiled Javascript file in the `dist` folder.
@@ -79,7 +80,7 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
     this.isLikelyMoving = false;
     this.calibrationTime = (config.closing_time || 20) * 1000; // 20 seconds
     // create a new Window Covering service
-    this.service = new hap.Service.WindowCovering(this.name, "asd");
+    this.service = new hap.Service.WindowCovering(this.name);
 
     // create handlers for required characteristics
     this.service
@@ -96,109 +97,85 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
       .on("get", this.handlePositionStateGet.bind(this));
 
     this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, "Custom Manufacturer")
-      .setCharacteristic(hap.Characteristic.Model, "Custom Model");
-
-    log.info("WindowCovering finished initializing!");
+      .setCharacteristic(
+        hap.Characteristic.Manufacturer,
+        "Innovation in Motion"
+      )
+      .setCharacteristic(hap.Characteristic.Model, "Slide");
 
     //setting initial position
-    request
-      .post(
-        "http://" + this.config.ip + "/rpc/Slide.GetInfo",
-        (error, response, body) => {
-          if (error) {
-            this.log.info("error:", error); // Print the error if one occurred
-          }
-          this.log.info("statusCode:", response && response.statusCode); // Print the response status code if a response was received
-          this.log.info("body:", body);
-          let position = this.SlideAPIPositionToHomekit(JSON.parse(body).pos);
+    this.getSlidePos((position) => {
+      if (this.CalculateDifference(position, 100) <= this.tolerance) {
+        position = 100;
+      } else if (this.CalculateDifference(position, 0) <= this.tolerance) {
+        position = 0;
+      }
+      this.service
+        .getCharacteristic(this.characteristic.TargetPosition)
+        .updateValue(position);
 
-          if (this.CalculateDifference(position, 100) <= this.tolerance) {
-            position = 100;
-          } else if (this.CalculateDifference(position, 0) <= this.tolerance) {
-            position = 0;
-          }
-          this.service
-            .getCharacteristic(this.characteristic.TargetPosition)
-            .updateValue(position);
-
-          this.service
-            .getCharacteristic(this.characteristic.CurrentPosition)
-            .updateValue(position);
-        }
-      )
-      .auth("user", this.config.code, false);
+      this.service
+        .getCharacteristic(this.characteristic.CurrentPosition)
+        .updateValue(position);
+    });
 
     const pollInterval = config.poll_interval || 5;
     poll(this.updateSlideInfo.bind(this), pollInterval * 1000);
+
+    log.info("Slide Curtain finished initializing!");
   }
 
   updateSlideInfo() {
     this.log.debug("Triggered update slide info from poll");
-    request
-      .post(
-        "http://" + this.config.ip + "/rpc/Slide.GetInfo",
-        (error, response, body) => {
-          if (error) {
-            this.log.info("error:", error); // Print the error if one occurred
-          }
-          this.log.info("statusCode:", response && response.statusCode); // Print the response status code if a response was received
-          this.log.info("body:", body);
-
-          let targetPosition;
-          let position = this.SlideAPIPositionToHomekit(JSON.parse(body).pos);
-
-          if (!this.isLikelyMoving) {
-            targetPosition = position;
-            if (this.CalculateDifference(position, 100) <= this.tolerance) {
-              targetPosition = 100;
-            } else if (
-              this.CalculateDifference(position, 0) <= this.tolerance
-            ) {
-              targetPosition = 0;
-            }
-            this.service
-              .getCharacteristic(this.characteristic.TargetPosition)
-              .updateValue(targetPosition);
-          }
-
-          targetPosition = this.service.getCharacteristic(
-            this.characteristic.TargetPosition
-          ).value;
-
-          const difference = this.CalculateDifference(targetPosition, position);
-          this.log.debug(
-            "Difference between position and target position: " + difference
-          );
-          this.log.debug("Current target position: " + targetPosition);
-          this.log.debug("Position from API: " + position);
-
-          if (difference <= this.tolerance) {
-            position = targetPosition;
-          }
-
-          this.service
-            .getCharacteristic(this.characteristic.CurrentPosition)
-            .updateValue(position);
-
-          if (targetPosition == position) {
-            this.service
-              .getCharacteristic(this.characteristic.PositionState)
-              .updateValue(this.characteristic.PositionState.STOPPED);
-            // We have stopped so set the likely moving to false
-            this.isLikelyMoving = false;
-          } else if (targetPosition < position) {
-            this.service
-              .getCharacteristic(this.characteristic.PositionState)
-              .updateValue(this.characteristic.PositionState.DECREASING);
-          } else {
-            this.service
-              .getCharacteristic(this.characteristic.PositionState)
-              .updateValue(this.characteristic.PositionState.INCREASING);
-          }
+    this.getSlidePos((position) => {
+      let targetPosition;
+      if (!this.isLikelyMoving) {
+        targetPosition = position;
+        if (this.CalculateDifference(position, 100) <= this.tolerance) {
+          targetPosition = 100;
+        } else if (this.CalculateDifference(position, 0) <= this.tolerance) {
+          targetPosition = 0;
         }
-      )
-      .auth("user", this.config.code, false);
+        this.service
+          .getCharacteristic(this.characteristic.TargetPosition)
+          .updateValue(targetPosition);
+      }
+
+      targetPosition = this.service.getCharacteristic(
+        this.characteristic.TargetPosition
+      ).value;
+
+      const difference = this.CalculateDifference(targetPosition, position);
+      this.log.debug(
+        "Difference between position and target position: " + difference
+      );
+      this.log.debug("Current target position: " + targetPosition);
+      this.log.debug("Position from API: " + position);
+
+      if (difference <= this.tolerance) {
+        position = targetPosition;
+      }
+
+      this.service
+        .getCharacteristic(this.characteristic.CurrentPosition)
+        .updateValue(position);
+
+      if (targetPosition == position) {
+        this.service
+          .getCharacteristic(this.characteristic.PositionState)
+          .updateValue(this.characteristic.PositionState.STOPPED);
+        // We have stopped so set the likely moving to false
+        this.isLikelyMoving = false;
+      } else if (targetPosition < position) {
+        this.service
+          .getCharacteristic(this.characteristic.PositionState)
+          .updateValue(this.characteristic.PositionState.DECREASING);
+      } else {
+        this.service
+          .getCharacteristic(this.characteristic.PositionState)
+          .updateValue(this.characteristic.PositionState.INCREASING);
+      }
+    });
   }
 
   /**
@@ -206,47 +183,34 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
    */
   handleCurrentPositionGet(callback) {
     this.log.debug("Triggered GET CurrentPosition");
-    request
-      .post(
-        "http://" + this.config.ip + "/rpc/Slide.GetInfo",
-        (error, response, body) => {
-          if (error) {
-            this.log.info("error:", error); // Print the error if one occurred
-          }
-          this.log.info("statusCode:", response && response.statusCode); // Print the response status code if a response was received
-          this.log.info("body:", body);
-          let position = this.SlideAPIPositionToHomekit(JSON.parse(body).pos);
-          let targetPosition;
+    this.getSlidePos((position) => {
+      let targetPosition;
 
-          if (!this.isLikelyMoving) {
-            targetPosition = position;
-            if (this.CalculateDifference(position, 100) <= this.tolerance) {
-              targetPosition = 100;
-            } else if (
-              this.CalculateDifference(position, 0) <= this.tolerance
-            ) {
-              targetPosition = 0;
-            }
-            this.service
-              .getCharacteristic(this.characteristic.TargetPosition)
-              .updateValue(targetPosition);
-          }
-          targetPosition = this.service.getCharacteristic(
-            this.characteristic.TargetPosition
-          ).value;
-
-          const difference = this.CalculateDifference(targetPosition, position);
-          if (difference <= this.tolerance) {
-            position = targetPosition;
-          }
-          this.service
-            .getCharacteristic(this.characteristic.CurrentPosition)
-            .updateValue(position);
-
-          callback(null, position);
+      if (!this.isLikelyMoving) {
+        targetPosition = position;
+        if (this.CalculateDifference(position, 100) <= this.tolerance) {
+          targetPosition = 100;
+        } else if (this.CalculateDifference(position, 0) <= this.tolerance) {
+          targetPosition = 0;
         }
-      )
-      .auth("user", this.config.code, false);
+        this.service
+          .getCharacteristic(this.characteristic.TargetPosition)
+          .updateValue(targetPosition);
+      }
+      targetPosition = this.service.getCharacteristic(
+        this.characteristic.TargetPosition
+      ).value;
+
+      const difference = this.CalculateDifference(targetPosition, position);
+      if (difference <= this.tolerance) {
+        position = targetPosition;
+      }
+      this.service
+        .getCharacteristic(this.characteristic.CurrentPosition)
+        .updateValue(position);
+
+      callback(null, position);
+    });
   }
 
   /**
@@ -254,26 +218,14 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
    */
   handleTargetPositionGet(callback) {
     this.log.debug("Triggered GET TargetPosition");
-    request
-      .post(
-        "http://" + this.config.ip + "/rpc/Slide.GetInfo",
-        (error, response, body) => {
-          if (error) {
-            this.log.info("error:", error); // Print the error if one occurred
-          }
-          this.log.info("statusCode:", response && response.statusCode); // Print the response status code if a response was received
-          this.log.info("body:", body);
-          const data = JSON.parse(body);
-          let position = this.SlideAPIPositionToHomekit(data.pos);
-          if (this.CalculateDifference(position, 100) <= this.tolerance) {
-            position = 100;
-          } else if (this.CalculateDifference(position, 0) <= this.tolerance) {
-            position = 0;
-          }
-          callback(null, position);
-        }
-      )
-      .auth("user", this.config.code, false);
+    this.getSlidePos((position) => {
+      if (this.CalculateDifference(position, 100) <= this.tolerance) {
+        position = 100;
+      } else if (this.CalculateDifference(position, 0) <= this.tolerance) {
+        position = 0;
+      }
+      callback(null, position);
+    });
   }
 
   /**
@@ -294,11 +246,18 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
         },
       },
       (error, response, body) => {
-        if (error) {
-          this.log.info("error:", error); // Print the error if one occurred
+        if (error || response.statusCode != 200) {
+          if (error) {
+            this.log.info("error:", error); // Print the error if one occurred
+            return callback(error);
+          } else {
+            return callback(
+              new Error("statusCode:" + response && response.statusCode)
+            );
+          }
         }
-        this.log.info("statusCode:", response && response.statusCode); // Print the response status code if a response was received
-        this.log.info("body:", body);
+        this.log.debug("statusCode:", response && response.statusCode); // Print the response status code if a response was received
+        this.log.debug("body:", body);
 
         const currentPosition =
           this.service.getCharacteristic(this.characteristic.CurrentPosition)
@@ -334,8 +293,6 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
         callback(null, targetPosition);
       }
     ).auth("user", this.config.code, false);
-
-    //callback(null);
   }
 
   /**
@@ -343,8 +300,15 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
    */
   handlePositionStateGet(callback) {
     this.log.debug("Triggered GET PositionState");
-    //Por ahora que nunca diga abriendo/cerrando que vaya de una al target position
-    callback(null, this.characteristic.PositionState.STOPPED);
+    // Seems like HomeKit doesn't care about the state, but rather compares target and current pos.
+    //callback(null, this.characteristic.PositionState.STOPPED);
+    // Just return the value in cache
+    callback(
+      null,
+      this.characteristic.this.service.getCharacteristic(
+        this.characteristic.PositionState
+      ).value
+    );
   }
 
   /*
@@ -387,5 +351,34 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
       difference = difference * -1;
     }
     return difference;
+  }
+
+  getSlidePos(callback) {
+    request
+      .post(
+        "http://" + this.config.ip + "/rpc/Slide.GetInfo",
+        (error, response, body) => {
+          let currentPosition;
+
+          if (error || response.statusCode != 200) {
+            if (error) {
+              this.log.info("error:", error); // Print the error if one occurred
+            }
+            // If no response available, return the current position in cache
+            currentPosition = this.service.getCharacteristic(
+              this.characteristic.CurrentPosition
+            ).value;
+          } else {
+            currentPosition = this.SlideAPIPositionToHomekit(
+              JSON.parse(body).pos
+            );
+          }
+
+          this.log.debug("statusCode:", response && response.statusCode); // Print the response status code if a response was received
+          this.log.debug("body:", body);
+          callback(currentPosition);
+        }
+      )
+      .auth("user", this.config.code, false);
   }
 }
