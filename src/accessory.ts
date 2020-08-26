@@ -47,13 +47,10 @@ let hap: HAP;
  */
 export = (api: API) => {
   hap = api.hap;
-  api.registerAccessory(
-    "homebridge-slide-curtain",
-    ExampleWindowCoveringAccessory
-  );
+  api.registerAccessory("slide-curtain", SlideCurtainAccessory);
 };
 
-class ExampleWindowCoveringAccessory implements AccessoryPlugin {
+class SlideCurtainAccessory implements AccessoryPlugin {
   private readonly log: Logging;
   private readonly config: AccessoryConfig;
   private readonly api: API;

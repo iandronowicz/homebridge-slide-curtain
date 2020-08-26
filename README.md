@@ -21,11 +21,13 @@ After that you will need to enter the following details into the ~/.homebridge/c
 {
   "accessories": [
     {
-      "accessory": "HomebridgeSlideCurtain", #REQUIRED
+      "accessory": "slide-curtain", #REQUIRED
       "name": "name", #REQUIRED. Your desired name.
       "ip": "x.x.x.x", #REQUIRED. Fixed IP configured for your Slide on your router.
       "code": "xxxxxxxx", #REQUIRED. 8 digit code in the sticker on the top of your Slide.
-      "poll_interval": x #OPTIONAL. Time in seconds to poll the Slide curtain. Defaults to 5s.
+      "poll_interval": x #OPTIONAL. Time in seconds to poll the Slide curtain. Defaults to 5.
+      "tolerance": x, #OPTIONAL. Threshold in % to still consider state fully open or fully closed. Defaults to 7.
+      "closing_time": x #OPTIONAL. Time in seconds it takes your curtain to fully open/close. Defaults to 20.
     }
  }
 ```

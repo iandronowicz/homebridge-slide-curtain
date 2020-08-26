@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "homebridge-slide-curtain",
+  "pluginAlias": "slide-curtain",
   "pluginType": "accessory",
   "singular": true,
   "schema": {
