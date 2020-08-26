@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "HomebridgeSlideCurtain",
+  "pluginAlias": "homebridge-slide-curtain",
   "pluginType": "accessory",
   "singular": true,
   "schema": {
@@ -14,6 +14,21 @@
         "title": "code",
         "type": "string",
         "required": true
+      },
+      "poll_interval": {
+        "title": "poll_interval",
+        "type": "integer",
+        "required": false
+      },
+      "tolerance": {
+        "title": "tolerance",
+        "type": "integer",
+        "required": false
+      },
+      "closing_time": {
+        "title": "closing_time",
+        "type": "integer",
+        "required": false
       }
     }
   }

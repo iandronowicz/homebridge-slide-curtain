@@ -48,7 +48,7 @@ let hap: HAP;
 export = (api: API) => {
   hap = api.hap;
   api.registerAccessory(
-    "HomebridgeSlideCurtain",
+    "homebridge-slide-curtain",
     ExampleWindowCoveringAccessory
   );
 };
@@ -119,7 +119,7 @@ class ExampleWindowCoveringAccessory implements AccessoryPlugin {
         .updateValue(position);
     });
 
-    const pollInterval = config.poll_interval || 5;
+    const pollInterval = config.poll_interval || 10;
     poll(this.updateSlideInfo.bind(this), pollInterval * 1000);
 
     log.info("Slide Curtain finished initializing!");
